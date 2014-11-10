@@ -1,5 +1,6 @@
 <?php
 
+require_once("simple_html_dom.php");
 require_once("/html5lib-php-master/library/HTML5/Parser.php");
 
 echo "	<!DOCTYPE html>
@@ -26,6 +27,17 @@ if($dom->loadHTML($data)){
 		$cName = $course->nodeValue;
 		$cUrl = $course->getAttribute("href");
 		
+		$html = file_get_html($cUrl);
+		
+		$codeNode = $html->find('div[id=header-wrapper] li', 2);
+		$cCode = $codeNode->plaintext;
+		/*foreach ($codeNode as $code) {
+			echo $code->plaintext;	
+		}
+		
+		//var_dump($codeNode);
+		
+		/*
 		// gå in på varje länk för att hitta ytterligare info
 		$cData = curl_get_request($cUrl);
 		
@@ -37,10 +49,17 @@ if($dom->loadHTML($data)){
 			
 		$libNodeList = $libXpath->query("//body/div[@id = 'page']//li");
 		
+		foreach ($libNodeList as $specNode) {
+			var_dump($specNode);
+			echo "</br>";
+			var_dump($specNode->parentNode->parentNode->attributes);
+			var_dump($specNode->nodeValue);
+		}
+		
 		var_dump($libNodeList);
 		
 		
-		
+		*/
 		
 		//var_dump($libDom->textContent);
 		//$nodelist = HTML5_Parser::parseFragment('<li></li>', 'header');
@@ -89,7 +108,7 @@ if($dom->loadHTML($data)){
 		$html = "<li><ul>
 		<li>Name: " . $cName . "</li>
 		<li>URL: " . $cUrl . "</li>
-		<li>Code: </li>
+		<li>Code: " . $cCode . "</li>
 		<li>Syllabus: </li>
 		<li>Info: </li>
 		<li>Latest post: </li>		
