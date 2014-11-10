@@ -1,7 +1,17 @@
 <?php
 
-$data = curl_get_request("http://coursepress.lnu.se/kurser");
-var_dump($data);
+$data = curl_get_request("http://coursepress.lnu.se/kurser/");
+
+$dom = new DOMDocument();
+
+if($dom->loadHTML($data)){
+	$xpath = new DOMXPath($dom);
+	$items = $xpath->query("//ul[@id = 'blogs-list']//div[@class = 'item-title']/a");
+	var_dump($items);
+}
+else {
+	die("HTML läsningen misslyckades");
+}
 
 function curl_get_request($url){
 	$ch = curl_init();
