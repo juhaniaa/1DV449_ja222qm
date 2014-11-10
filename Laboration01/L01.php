@@ -29,8 +29,38 @@ if($dom->loadHTML($data)){
 		
 		$html = file_get_html($cUrl);
 		
-		$codeNode = $html->find('div[id=header-wrapper] li', 2);
-		$cCode = $codeNode->plaintext;
+		$cNode = $html->find('div[id=header-wrapper] li', 2);
+		$cCode = $cNode->plaintext;
+				
+		$sNode = $html->find("ul.sub-menu li a[href*=prod]");
+		
+		foreach ($sNode as $sUrl) {
+			$cSyllabus = $sUrl->href;			
+		}
+		
+		$iNode = $html->find("div.entry-content", 0);		
+		$cInfo = $iNode->plaintext;
+		
+		$postHeaderNode = $html->find("#content header.entry-header h1 a", 0);
+		if($postHeaderNode){
+			$cPostHeader = $postHeaderNode->plaintext;	
+		} else{
+			$cPostHeader = "no information";
+		}
+		
+		
+		$postWriterNode = $html->find("#content header.entry-header p.entry-byline", 0);
+		if($postWriterNode){
+			$cWriter = $postWriterNode->plaintext;
+		} else{
+			$cWriter = "no information";
+		}
+		
+		
+		
+		$html->clear();
+		unset($html);
+		
 		/*foreach ($codeNode as $code) {
 			echo $code->plaintext;	
 		}
@@ -109,9 +139,9 @@ if($dom->loadHTML($data)){
 		<li>Name: " . $cName . "</li>
 		<li>URL: " . $cUrl . "</li>
 		<li>Code: " . $cCode . "</li>
-		<li>Syllabus: </li>
-		<li>Info: </li>
-		<li>Latest post: </li>		
+		<li>Syllabus: " . $cSyllabus . "</li>
+		<li>Info: " . $cInfo . "</li>
+		<li>Latest post: " . $cPostHeader . " " . $cWriter . "</li>		
 		</ul></li></br>";
 		echo $html;
 	}
