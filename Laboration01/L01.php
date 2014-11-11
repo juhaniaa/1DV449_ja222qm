@@ -12,15 +12,72 @@ echo "	<!DOCTYPE html>
 			<body>
 				<ul>";	
 
-$data = curl_get_request("http://coursepress.lnu.se/kurser/");
+getAllPages("/kurser/");
 
-$dom = new DOMDocument();
 
-if($dom->loadHTML($data)){
-	$xpath = new DOMXPath($dom);
-
-	$courses = $xpath->query("//ul[@id = 'blogs-list']//div[@class = 'item-title']/a[contains(@href, 'lnu.se/kurs')]");
+echo "</ul>
+	</body>
+	</html>";
 	
+function getAllPages($url){
+	$base = "http://coursepress.lnu.se";
+	$url = $base . $url;
+	
+	$retHtml = "";
+	
+	$start = file_get_html($url);
+	
+	$courses = $start->find("div.item-title a[href*=kurs]");
+	
+	echo getPageCoursesHtml($courses);
+	
+	$nextPage = $start->find("div[id=pag-top] a.next", 0);
+	
+	if($nextPage){
+		echo "it exists";
+		getAllPages($nextPage->href);
+	} else {
+		echo "dosnt exist";
+	}
+	
+	return $retHtml;
+	
+	/*
+	$retHtml = "";
+	
+	// 1 Request på /kurser/
+	$data = curl_get_request("http://coursepress.lnu.se/kurser/");
+	
+	$dom = new DOMDocument();
+	if($dom->loadHTML($data)){
+		
+		$xpath = new DOMXPath($dom);
+		
+		// hämta ut alla kurs-länkar från hämtade html datat
+		$courses = $xpath->query("//ul[@id = 'blogs-list']//div[@class = 'item-title']/a[contains(@href, 'lnu.se/kurs')]");
+		
+		//$retHtml .= getPageCoursesHtml($courses);
+		
+		// kolla om $dom innehåller en "next-page"-knapp		
+		$nextPageNode = $xpath->query("//div[@id = 'blogs-dir-list']//div[@id = 'blog-dir-count-top']//a[@class = 'next']");
+		var_dump($nextPageNode);
+		
+		// om ja...kör igen från steg 1 med nytt data
+		
+	}
+
+	else {
+		die("HTML läsningen misslyckades");
+	}
+	
+	return $retHtml;*/
+}
+	
+function getPageCoursesHtml($courses){
+	
+	$ret = "";
+	$html = "";
+		
 	// varje "blog"-element i listan
 	foreach ($courses as $course) {
 		
@@ -28,11 +85,11 @@ if($dom->loadHTML($data)){
 		
 		/* Name */
 		$cName = $noInfo;
-		$cName = $course->nodeValue;
+		$cName = $course->plaintext;
 		
 		/* URL */
 		$cUrl = $noInfo;
-		$cUrl = $course->getAttribute("href");
+		$cUrl = $course->href;
 		
 		$html = file_get_html($cUrl);
 		
@@ -71,10 +128,7 @@ if($dom->loadHTML($data)){
 			$cWriter = $postWriterNode->plaintext;
 		}
 
-		$html->clear();
-		unset($html);
-		
-		$html = "<li><ul>
+		$ret .= "<li><ul>
 		<li>Name: " . $cName . "</li>
 		<li>URL: " . $cUrl . "</li>
 		<li>Code: " . $cCode . "</li>
@@ -82,27 +136,21 @@ if($dom->loadHTML($data)){
 		<li>Info: " . $cInfo . "</li>
 		<li>Latest post: " . $cPostHeader . " " . $cWriter . "</li>		
 		</ul></li></br>";
-		echo $html;
 	}
-}
 
-else {
-	die("HTML läsningen misslyckades");
+	$html->clear();
+	unset($html);
+	
+	return $ret;
 }
-echo "</ul>
-	</body>
-	</html>";
 
 function curl_get_request($url){
 	$ch = curl_init();
 	curl_setopt($ch, CURLOPT_URL, $url);
-	
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-	
+	curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 0);
 	$data = curl_exec($ch);
-	
 	curl_close($ch);
 	
 	return $data;
-	
 }
