@@ -1,7 +1,6 @@
 <?php
-
+set_time_limit (60);
 require_once("simple_html_dom.php");
-require_once("/html5lib-php-master/library/HTML5/Parser.php");
 
 echo "	<!DOCTYPE html>
 		<html lang='sv'>
@@ -20,57 +19,25 @@ echo "</ul>
 	</html>";
 	
 function getAllPages($url){
+	
 	$base = "http://coursepress.lnu.se";
 	$url = $base . $url;
 	
-	$retHtml = "";
 	
 	$start = file_get_html($url);
 	
 	$courses = $start->find("div.item-title a[href*=kurs]");
-	
+
 	echo getPageCoursesHtml($courses);
 	
 	$nextPage = $start->find("div[id=pag-top] a.next", 0);
 	
 	if($nextPage){
-		echo "it exists";
+		echo "<h2>it exists</h2>";
 		getAllPages($nextPage->href);
 	} else {
 		echo "dosnt exist";
 	}
-	
-	return $retHtml;
-	
-	/*
-	$retHtml = "";
-	
-	// 1 Request på /kurser/
-	$data = curl_get_request("http://coursepress.lnu.se/kurser/");
-	
-	$dom = new DOMDocument();
-	if($dom->loadHTML($data)){
-		
-		$xpath = new DOMXPath($dom);
-		
-		// hämta ut alla kurs-länkar från hämtade html datat
-		$courses = $xpath->query("//ul[@id = 'blogs-list']//div[@class = 'item-title']/a[contains(@href, 'lnu.se/kurs')]");
-		
-		//$retHtml .= getPageCoursesHtml($courses);
-		
-		// kolla om $dom innehåller en "next-page"-knapp		
-		$nextPageNode = $xpath->query("//div[@id = 'blogs-dir-list']//div[@id = 'blog-dir-count-top']//a[@class = 'next']");
-		var_dump($nextPageNode);
-		
-		// om ja...kör igen från steg 1 med nytt data
-		
-	}
-
-	else {
-		die("HTML läsningen misslyckades");
-	}
-	
-	return $retHtml;*/
 }
 	
 function getPageCoursesHtml($courses){
@@ -87,9 +54,11 @@ function getPageCoursesHtml($courses){
 		$cName = $noInfo;
 		$cName = $course->plaintext;
 		
+		
 		/* URL */
 		$cUrl = $noInfo;
 		$cUrl = $course->href;
+		
 		
 		$html = file_get_html($cUrl);
 		
@@ -121,6 +90,7 @@ function getPageCoursesHtml($courses){
 			$cPostHeader = $postHeaderNode->plaintext;	
 		}
 		
+		
 		/* Latest post writer and date/time */
 		$cWriter = $noInfo;
 		$postWriterNode = $html->find("#content header.entry-header p.entry-byline", 0);
@@ -136,11 +106,12 @@ function getPageCoursesHtml($courses){
 		<li>Info: " . $cInfo . "</li>
 		<li>Latest post: " . $cPostHeader . " " . $cWriter . "</li>		
 		</ul></li></br>";
+		
+		
 	}
 
 	$html->clear();
 	unset($html);
-	
 	return $ret;
 }
 
