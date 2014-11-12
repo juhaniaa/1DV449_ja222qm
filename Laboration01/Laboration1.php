@@ -1,32 +1,26 @@
 <?php
-
+header('Content-Type: text/html; charset=utf-8');
 libxml_use_internal_errors(true);
-
-echo "	<!DOCTYPE html>
-		<html lang='sv'>
-			<head>
-				<title>Labb 1 - Webbteknik 2</title>
-				<meta http-equiv='Content-type' content='text/html' charset='utf-8' />
-			</head>
-			<body>
-				<ul>";	
 
 $myScraper = new Scraper;
 
 $myScraper->getAllPages("/kurser/");
 
-echo $myScraper->numberOfPages . " number of courses scraped";
+//$myScraper->numberOfPages . " number of courses scraped";
 
+$myJson = array('name'=>'Webbteknik', 'code'=>12354, 'url'=>'http://prod.kursinfo.lnu.se/utbildning/GenerateDocument.ashx?templatetype=coursesyllabus&amp;code=1DV433&amp;documenttype=pdf&amp;lang=sv');
 
-echo "</ul>
-	</body>
-	</html>";
+file_put_contents('items.json', json_encode($myScraper->coursesArray, JSON_UNESCAPED_UNICODE));
+
+echo "DONE";
 
 class Scraper{
 	public $numberOfPages;
+	public $coursesArray;
 	
 	public function __construct(){
 		$this->numberOfPages = 0;
+		$this->coursesArray = array();
 	}
 	
 	public function getURL($URL) {
@@ -56,8 +50,6 @@ class Scraper{
 			$amount = $this->getPageCoursesHtml($courses);
 			$this->numberOfPages += $amount;
 			
-			var_dump($amount);
-			
 			$nextPage = $xpath->query("//div[@id = 'blog-dir-pag-top']//a[contains(@class, 'next')]");
 			
 			if($nextPage->length != 0){
@@ -72,10 +64,8 @@ class Scraper{
 				
 			} else {
 				// done
-			}  
-			
-		}
-		
+			}  		
+		}	
 	}
 	
 	public function getPageCoursesHtml($courses){
@@ -122,19 +112,11 @@ class Scraper{
 					$cPostInfo = $course_postInfo->item(0)->nodeValue;	
 				}
 				
-				$ret = "<li><ul>
-				<li>Name: " . $cName . "</li>
-				<li>URL: " . $cUrl . "</li>
-				<li>Code: " . $cCode . "</li>
-				<li>Syllabus: " . $cSyllabus . "</li>
-				<li>Info: " . $cInfo . "</li>
-				<li>Latest post: " . $cPostHeader . " " . $cPostInfo . "</li>		
-				</ul></li></br>";
+				$arrCourse = array('Name'=>$cName, 'Url'=>$cUrl, 'Code'=>$cCode, 'Syllabus'=>$cSyllabus, 'Info'=>$cInfo, 'PostHeader'=>$cPostHeader, 'PostInfo'=>$cPostInfo);
 				
-				echo $ret;
+				$this->coursesArray[] = $arrCourse;
 	        }
 	    }
-	
 		return $amount;
 	}
 }
