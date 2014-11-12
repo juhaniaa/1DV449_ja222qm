@@ -2,17 +2,38 @@
 header('Content-Type: text/html; charset=utf-8');
 libxml_use_internal_errors(true);
 
-$myScraper = new Scraper;
+$doScrape = false;
 
-$myScraper->getAllPages("/kurser/");
+// first check if file exists and if 5 minutes have passed since last scrape
+$str_data = file_get_contents('items.json');
+if($str_data !== false){
+	$data = json_decode($str_data,true);
+	$lastTime = $data["time"];
+	
+	$timePassed = (time()-$lastTime) > 300;
+	if($timePassed){
+		$doScrape = true;
+	}
+} else {
+	$doScrape = true;
+}
 
-//$myScraper->numberOfPages . " number of courses scraped";
-
-$myJson = array('name'=>'Webbteknik', 'code'=>12354, 'url'=>'http://prod.kursinfo.lnu.se/utbildning/GenerateDocument.ashx?templatetype=coursesyllabus&amp;code=1DV433&amp;documenttype=pdf&amp;lang=sv');
-
-file_put_contents('items.json', json_encode($myScraper->coursesArray, JSON_UNESCAPED_UNICODE));
-
-echo "DONE";
+if($doScrape){
+	$myScraper = new Scraper;
+	$myScraper->getAllPages("/kurser/");
+	$coursesJson = $myScraper->coursesArray;
+	$readyJson = array(
+		'courses'=>$coursesJson,
+		'amount'=>$myScraper->numberOfPages,
+		'time'=>time()
+	);
+	
+	file_put_contents('items.json', json_encode($readyJson, JSON_FORCE_OBJECT));
+	
+	echo "DONE";
+} else {
+	echo "Timelimit has not passed";
+}
 
 class Scraper{
 	public $numberOfPages;
@@ -29,6 +50,7 @@ class Scraper{
 	    //curl_setopt($ch, CURLOPT_HEADER, true);
 	    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
 	    curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE); 
+		curl_setopt($ch,CURLOPT_USERAGENT,'ja222qm Scraper');
 	    $curlData = curl_exec($ch);
 		curl_close($ch);
 		return $curlData;
@@ -60,11 +82,8 @@ class Scraper{
 					$href = $page->getAttribute("href");
 				}
 				
-				$this->getAllPages($href);
-				
-			} else {
-				// done
-			}  		
+				$this->getAllPages($href);	
+			} 	
 		}	
 	}
 	
@@ -120,7 +139,3 @@ class Scraper{
 		return $amount;
 	}
 }
-
-
-
-
