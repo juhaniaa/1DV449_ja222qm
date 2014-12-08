@@ -1,4 +1,5 @@
 <?php
+
 /**
 Just som simple scripts for session handling
 */
@@ -45,27 +46,24 @@ function isUser($u, $p) {
 	catch(PDOEception $e) {
 		die("Del -> " .$e->getMessage());
 	}
-	$q = "SELECT id FROM users WHERE username = ? AND password = ?";
-	$params = array($u, $p);
+	$q = "SELECT id FROM users WHERE username = '$u' AND password = '$p'";
 
 	$result;
 	$stm;
 	try {
 		$stm = $db->prepare($q);
-		$stm->execute($params);
-		$result = $stm->fetch();		
-		
+		$stm->execute();
+		$result = $stm->fetchAll();
 		if(!$result) {
-			return null;
-			//return "Could not find the user";
+			return "Could not find the user";
 		}
 	}
 	catch(PDOException $e) {
 		echo("Error creating query: " .$e->getMessage());
 		return false;
 	}
-
 	return $result;
+	
 }
 
 function getUser($user) {
@@ -96,9 +94,11 @@ function getUser($user) {
 }
 
 function logout() {
+
 	if(!session_id()) {
 		sec_session_start();
 	}
 	session_end();
 	header('Location: index.php');
 }
+
