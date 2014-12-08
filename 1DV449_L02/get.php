@@ -49,44 +49,48 @@ function loadMessage($cookieName) {
 }
 
 function clean_input($data) {
-  $data = trim($data);
-  $data = stripslashes($data);
-  $data = htmlspecialchars($data);
-  return $data;
+	$data = trim($data);
+	$data = stripslashes($data);
+	$data = htmlspecialchars($data);
+	return $data;
 }
 
 function isUserLogged(){
 	$aip = $_SERVER["REMOTE_ADDR"];
 	$bip = $_SERVER["HTTP_X_FORWARDED_FOR"];
 	$agent = $_SERVER["HTTP_USER_AGENT"];
-	
 	$ident = hash("sha256", $aip . $bip . $agent);
-	
-	
-	/*
-	//echo $ident;
-	//echo "</br>";
-	echo $_SESSION["login_string"];
-	echo $_SESSION["login_string"];
-	$yolo = $_SESSION["login_string"];
-	print($yolo);
-	echo $yolo;
-	
-	
-	echo isset($_SESSION["login_string"]);
-	echo "hello";
-	
-	 * 
-	
-	var_dump($ident);
-	var_dump($_SESSION["login_string"]);
-	die();*/
-	
-	
+
 	if(isset($_SESSION["login_string"])){
 		if($_SESSION["login_string"] == $ident){
 			return true;
 		}
 	} 
 	return false;
+}
+
+function getHeader(){
+	return '
+	<!DOCTYPE html>
+	<html lang="en">
+	<head>
+	    <meta charset="utf-8">
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	    <meta name="description" content="">
+	    <meta name="author" content="">
+	    
+	    <!-- Icons -->
+	    <link rel="apple-touch-icon" href="touch-icon-iphone.png">
+	    <link rel="apple-touch-icon" sizes="76x76" href="touch-icon-ipad.png">
+	    <link rel="apple-touch-icon" sizes="120x120" href="touch-icon-iphone-retina.png">
+	    <link rel="apple-touch-icon" sizes="152x152" href="touch-icon-ipad-retina.png">
+	    <link rel="shortcut icon" href="pic/favicon.png">
+	    
+	    <!-- CSS -->
+	    <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
+	    <link rel="stylesheet" type="text/css" href="css/dyn.css" />
+	       
+		<title>Messy Labbage</title>
+  	</head>';
 }

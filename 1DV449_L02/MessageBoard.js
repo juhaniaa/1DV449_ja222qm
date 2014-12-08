@@ -30,7 +30,7 @@ var MessageBoard = {
     
     },
     getMessages:function() {
-        console.log("INNE");
+        
         $.ajax({
 			type: "GET",
 			url: "functions.php",
@@ -56,18 +56,17 @@ var MessageBoard = {
 
     },
     sendMessage:function(){
+    	
+    	if(MessageBoard.textField.value == "") return;
         
-        if(MessageBoard.textField.value == "") return;
-        
-        // Make call to ajax
+        // Make call to ajax - POST!!!
         $.ajax({
-			type: "GET",
+			type: "POST",
 		  	url: "functions.php",
 		  	data: {function: "add", name: MessageBoard.nameField.value, message:MessageBoard.textField.value}
 		}).done(function(data) {
 		  alert("Your message is saved! Reload the page for watching it");
 		});
-    
     },
     renderMessages: function(){
         // Remove all messages

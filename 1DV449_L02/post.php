@@ -6,6 +6,14 @@
 function addToDB($message, $user) {
 	$db = null;
 	
+	$message = trim($message);
+	$message = stripslashes($message);
+	$message = htmlspecialchars($message);
+
+	$user = trim($user);
+	$user = stripslashes($user);
+	$user = htmlspecialchars($user);
+	
 	try {
 		$db = new PDO("sqlite:db.db");
 		$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -14,30 +22,16 @@ function addToDB($message, $user) {
 		die("Something went wrong -> " .$e->getMessage());
 	}
 	
-	$q = "INSERT INTO messages (message, name) VALUES('$message', '$user')";
+	$q = "INSERT INTO messages (message, name) VALUES(?, ?)";
+	$params = array($message, $user);
 	
-	try {
-		if(!$db->query($q)) {}
-	}
-	catch(PDOException $e) {}
-	
-	$q = "SELECT * FROM users WHERE username = '" .$user ."'";
-	$result;
-	$stm;
-	try {
-		$stm = $db->prepare($q);
-		$stm->execute();
-		$result = $stm->fetchAll();
-		if(!$result) {
-			return "Could not find the user";
-		}
+	try {		
+		$query = $db->prepare($q);
+		$result = $query->execute($params);	
+		//echo "Message saved by user: " .json_encode($result);				
 	}
 	catch(PDOException $e) {
-		echo("Error creating query: " .$e->getMessage());
-		return false;
+		die("Something went wrong -> " . $e->getMessage());
 	}
-	// Send the message back to the client
-	echo "Message saved by user: " .json_encode($result);
-	
 }
 

@@ -14,27 +14,6 @@ function sec_session_start() {
         session_regenerate_id(); // regenerated the session, delete the old one.
 }
 
-function checkUser() {
-	if(!session_id()) {
-		sec_session_start();
-	}
-
-	if(!isset($_SESSION["user"])) {header('HTTP/1.1 401 Unauthorized'); die();}
-
-	$user = getUser($_SESSION["user"]);
-	$un = $user[0]["username"];
-
-	if(isset($_SESSION['login_string'])) {
-		if($_SESSION['login_string'] !== hash('sha512', "123456" + $un) ) {
-			header('HTTP/1.1 401 Unauthorized'); die();
-		}
-	}
-	else {
-		header('HTTP/1.1 401 Unauthorized'); die();
-	}
-	return true;
-}
-
 function isUser($u, $p) {
 	$db = null;
 
@@ -57,48 +36,11 @@ function isUser($u, $p) {
 		
 		if(!$result) {
 			return null;
-			//return "Could not find the user";
 		}
 	}
 	catch(PDOException $e) {
 		echo("Error creating query: " .$e->getMessage());
 		return false;
 	}
-
 	return $result;
-}
-
-function getUser($user) {
-	$db = null;
-
-	try {
-		$db = new PDO("sqlite:db.db");
-		$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-	}
-	catch(PDOEception $e) {
-		die("Del -> " .$e->getMessage());
-	}
-	$q = "SELECT * FROM users WHERE username = '$user'";
-
-	$result;
-	$stm;
-	try {
-		$stm = $db->prepare($q);
-		$stm->execute();
-		$result = $stm->fetchAll();
-	}
-	catch(PDOException $e) {
-		echo("Error creating query: " .$e->getMessage());
-		return false;
-	}
-
-	return $result;
-}
-
-function logout() {
-	if(!session_id()) {
-		sec_session_start();
-	}
-	session_end();
-	header('Location: index.php');
 }
